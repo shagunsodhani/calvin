@@ -68,7 +68,7 @@ def parse_tweet(tweet):
 
     return payload
 
-def insert_tweet(payload, cursor, conn):
+def insert_tweet(payload, cursor, conn, f):
 
     """
         Method to insert the payload into mysql instance. 
@@ -102,10 +102,8 @@ def insert_tweet(payload, cursor, conn):
                 print sql
                 mysql.write(sql, conn, cursor)       
     except UnicodeEncodeError as e:
-        print "ERROR"
-        print e
-        print sql
-        print "\n\n\n"
+        error_message = "ERROR \n" + str(e) + "\n" + str(payload) + "\n\n\n" 
+        f.write(error_message)
    
 
 def run():
@@ -134,6 +132,8 @@ def run():
     conn = mysql.connect(host, user, password, db, charset, use_unicode)
     cursor=conn.cursor()
 
+    f = open('error.txt','w')
+
     flag = True
     while flag:
         try:
@@ -146,12 +146,13 @@ def run():
             print since_id
             # return
             for payload in process_pipeline(get_tweets(auth = auth, screen_name = "Calvinn_Hobbes", since_id = since_id), [parse_tweet]):
-                insert_tweet(payload, cursor, conn)
+                insert_tweet(payload, cursor, conn, f)
             flag = False
         except tweepy.error.TweepError as e:
-            print e 
-            print "sleeping for 15 minutes"
+            error_message = "ERROR \n" + str(e) + "\nsleeping for 15 minutes\n\n\n"
+            f.write(error_message)
             sleep(15*60)
+    f.close()
 
 if __name__ == '__main__':
 
