@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Calvin : Script to download all comic strips from @Calvinn_Hobbes twitter account">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Calvin</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/shagunsodhani/calvin">View on GitHub</a>
+
+          <h1 id="project_title">Calvin</h1>
+          <h2 id="project_tagline">Script to download all comic strips from @Calvinn_Hobbes twitter account</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/shagunsodhani/calvin/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/shagunsodhani/calvin/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="calvin" class="anchor" href="#calvin" aria-hidden="true"><span class="octicon octicon-link"></span></a>calvin</h1>
+
+<p>Script to download all comic strips from <a href="https://twitter.com/Calvinn_Hobbes">@Calvinn_Hobbes</a> twitter account.</p>
+
+<h2>
+<a id="setup" class="anchor" href="#setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup</h2>
+
+<pre><code>git clone git@github.com:shagunsodhani/calvin.git
+
+cd calvin
+
+mkdir images
+
+cp config/config.cfg.sample config/config.cfg
+</code></pre>
+
+<p>Update the fields in <code>config.cfg</code> and import schema from <code>schema</code>.</p>
+
+<p>Run <code>python scrapper.py</code>. This will download 3200 most recent tweets. <a href="https://twitter.com/Calvinn_Hobbes">@Calvinn_Hobbes</a> has made less than 3000 tweets as of now. So we will be able to collect all tweets. Setup <code>scrapper.py</code> to run as a cron job to download new tweets.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p><a href="http://shagun.mit-license.org/">MIT</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Calvin maintained by <a href="https://github.com/shagunsodhani">shagunsodhani</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-68140113-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
