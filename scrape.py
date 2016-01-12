@@ -55,8 +55,8 @@ def parse_tweet(tweet):
             media = {}
             media[TWEET_ID] = data[ID]
             media[URL] = entity[MEDIA_URL_HTTPS]
-            media[PATH] = "images/"+str(int(time()))+"."+media[URL].split(".")[-1]+":large"
-            response = requests.get(media[URL], stream=True)
+            media[PATH] = "images/"+str(int(time()*1000))+"."+media[URL].split(".")[-1]
+            response = requests.get(media[URL]+":large", stream=True)
             with open(media[PATH], WB) as out_file:
                 shutil.copyfileobj(response.raw, out_file)
             del response
@@ -66,7 +66,7 @@ def parse_tweet(tweet):
     payload[TWEET] = data_list
     payload[MEDIA] = media_list
 
-    return payload 
+    return payload
 
 def insert_tweet(payload, cursor, conn):
 
@@ -78,30 +78,35 @@ def insert_tweet(payload, cursor, conn):
             cursor: cursor object
             conn: connection object
     """
-
-    for (table, data) in payload.items():
-        column_string = "("
-        value_string = "("
-        if data:
-            print data
-            for (key, value) in data[0].items():
-                column_string+=key+","
-                value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
-            column_string = column_string[:-1] + ")"
-            value_string = value_string[:-1] + "),"
-            
-            if data[1:]:
-                for d in data[1:]:
-                    value_string += "("
-                    for (key, value) in d.items():
-                        value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
-                    value_string = value_string[:-1] + "),"
+    try:
+        for (table, data) in payload.items():
+            column_string = "("
+            value_string = "("
+            if data:
+                print data
+                for (key, value) in data[0].items():
+                    column_string+=key+","
+                    value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
+                column_string = column_string[:-1] + ")"
+                value_string = value_string[:-1] + "),"
+                
+                if data[1:]:
+                    for d in data[1:]:
+                        value_string += "("
+                        for (key, value) in d.items():
+                            value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
+                        value_string = value_string[:-1] + "),"
                 value_string = value_string[:-1]
 
-            sql = "INSERT into "+table+" "+column_string+ " VALUE "+value_string
-            print sql
-            mysql.write(sql, cursor, conn)       
-            
+                sql = "INSERT into "+table+" "+column_string+ " VALUE "+value_string
+                print sql
+                mysql.write(sql, conn, cursor)       
+    except UnicodeEncodeError as e:
+        print "ERROR"
+        print e
+        print sql
+        print "\n\n\n"
+   
 
 def run():
     """
@@ -135,14 +140,13 @@ def run():
             sql = "SELECT max(id) FROM tweet"
             result = mysql.read(sql, cursor)
             if result[0][0]:
-                since_id = result[0][0]
+                since_id = int(result[0][0])
             else:
                 since_id = -1
             print since_id
-            return
+            # return
             for payload in process_pipeline(get_tweets(auth = auth, screen_name = "Calvinn_Hobbes", since_id = since_id), [parse_tweet]):
-                print payload
-                insert_tweet(payload)
+                insert_tweet(payload, cursor, conn)
             flag = False
         except tweepy.error.TweepError as e:
             print e 
