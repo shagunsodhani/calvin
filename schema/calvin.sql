@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 12, 2016 at 03:07 PM
+-- Generation Time: Jan 12, 2016 at 05:35 PM
 -- Server version: 5.5.46-0ubuntu0.14.04.2
 -- PHP Version: 5.5.9-1ubuntu4.14
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `media` (
   `path` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `tweet_id` (`tweet_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2768 ;
 
 -- --------------------------------------------------------
 
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `media` (
 
 CREATE TABLE IF NOT EXISTS `tweet` (
   `id` bigint(20) NOT NULL,
-  `text` varchar(140) NOT NULL,
+  `text` varchar(1400) NOT NULL,
   `created_at` datetime NOT NULL,
   `inserted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
