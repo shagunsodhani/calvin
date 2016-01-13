@@ -1,5 +1,8 @@
 from ConfigParser import ConfigParser
-import shutil
+from PIL import Image
+from StringIO import StringIO
+import os
+
 from time import time, sleep
 from dateutil.parser import parse
 
@@ -57,9 +60,13 @@ def parse_tweet(tweet):
             media[URL] = entity[MEDIA_URL_HTTPS]
             media[PATH] = "images/"+str(int(time()*1000))+"."+media[URL].split(".")[-1]
             response = requests.get(media[URL]+":large", stream=True)
-            with open(media[PATH], WB) as out_file:
-                shutil.copyfileobj(response.raw, out_file)
-            del response
+            if(response.status_code == requests.codes.ok):  
+                image = Image.open(StringIO(response.content))
+                path = os.path.dirname(os.path.abspath('__file__')) + "/" +  media[PATH]
+                image.save(path)
+                del response
+            else:
+                error_message = "ERROR \nInvalid URL\n" + str(media[URL]) + "\n\n\n"  
             media_list.append(media)
 
     payload = {}
@@ -77,33 +84,33 @@ def insert_tweet(payload, cursor, conn, f):
             payload: dict containing tweet_list and media_list. tweet_list is the list of tweet objects to be dumped into the database and media_list is the list of media items belonging to the tweet that is to be dumped.
             cursor: cursor object
             conn: connection object
+            f: file object to which errors are logged.
     """
-    try:
-        for (table, data) in payload.items():
-            column_string = "("
-            value_string = "("
-            if data:
-                print data
-                for (key, value) in data[0].items():
-                    column_string+=key+","
+    for (table, data) in payload.items():
+        column_string = "("
+        value_string = "("
+        if data:
+            for (key, value) in data[0].items():
+                column_string+=key+","
+                try:
                     value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
-                column_string = column_string[:-1] + ")"
-                value_string = value_string[:-1] + "),"
-                
-                if data[1:]:
-                    for d in data[1:]:
-                        value_string += "("
-                        for (key, value) in d.items():
-                            value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
-                        value_string = value_string[:-1] + "),"
-                value_string = value_string[:-1]
+                except UnicodeEncodeError as e:
+                    error_message = "ERROR \n" + str(e) + "\n" + str(data) + "\n\n\n" 
+                    f.write(error_message)
+                    value_string+=DEFAULT_VALUE+","
+            column_string = column_string[:-1] + ")"
+            value_string = value_string[:-1] + "),"
+            
+            if data[1:]:
+                for d in data[1:]:
+                    value_string += "("
+                    for (key, value) in d.items():
+                        value_string+="\""+str(str(value).replace('"','\\"').replace("'","\\'"))+"\""+","
+                    value_string = value_string[:-1] + "),"
+            value_string = value_string[:-1]
 
-                sql = "INSERT into "+table+" "+column_string+ " VALUE "+value_string
-                print sql
-                mysql.write(sql, conn, cursor)       
-    except UnicodeEncodeError as e:
-        error_message = "ERROR \n" + str(e) + "\n" + str(payload) + "\n\n\n" 
-        f.write(error_message)
+            sql = "INSERT into "+table+" "+column_string+ " VALUE "+value_string
+            mysql.write(sql, conn, cursor)       
    
 
 def run():
@@ -125,6 +132,7 @@ def run():
     consumer_secret=config.get(TWITTER, CONSUMER_SECRET)
     access_token=config.get(TWITTER, ACCESS_TOKEN)
     access_token_secret=config.get(TWITTER, ACCESS_TOKEN_SECRET)
+    log_error_file=config.get(LOG, ERROR_FILE)
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
@@ -132,7 +140,7 @@ def run():
     conn = mysql.connect(host, user, password, db, charset, use_unicode)
     cursor=conn.cursor()
 
-    f = open('error.txt','w')
+    f = open(log_error_file,'a')
 
     flag = True
     while flag:
@@ -144,7 +152,6 @@ def run():
             else:
                 since_id = -1
             print since_id
-            # return
             for payload in process_pipeline(get_tweets(auth = auth, screen_name = "Calvinn_Hobbes", since_id = since_id), [parse_tweet]):
                 insert_tweet(payload, cursor, conn, f)
             flag = False
